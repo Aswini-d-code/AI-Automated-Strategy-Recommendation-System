@@ -1,0 +1,80 @@
+{
+  "name": "Error",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fb8c8ae2-0840-48ab-a755-e64dcaee0c5c",
+      "name": "Error Trigger",
+      "notes": "🚨 ALERT: The Strategy Engine workflow just failed. Please check the execution logs in n8n."
+    },
+    {
+      "parameters": {
+        "sendTo": "=aswinidillibabu2005@gmail.com",
+        "subject": "🚨 Alert: AI Strategy Engine Failed",
+        "message": "=",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "315d716f-2fc5-4c98-8804-dbaec1660c37",
+      "name": "error_mail",
+      "webhookId": "29bea736-426a-4b51-84da-552f9f8354f5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2eCtNILcCAMEXxFj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Error Workflow \n\nAny workflow execution failure triggers a separate\nerror-handling workflow that sends an alert email\nto administrators for quick troubleshooting.",
+        "height": 192
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -32
+      ],
+      "id": "49c0b6b8-560c-402e-bc4b-3857b68a2ab7",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "error_mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "134b8afe-3a89-4481-9654-7d17d91df3fa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "04e56473066ddf355c8de34b86cb550c53e837e6f20310a60486fd7a6b270cf7"
+  },
+  "id": "vFblciOM34GZsEF9",
+  "tags": []
+}

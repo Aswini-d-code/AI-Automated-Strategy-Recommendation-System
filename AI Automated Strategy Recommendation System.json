@@ -1,0 +1,246 @@
+{
+  "name": "AI Automated Strategy Recommendation System",
+  "nodes": [
+    {
+      "parameters": {
+        "formId": "svxb31sS"
+      },
+      "type": "n8n-nodes-base.typeformTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        0
+      ],
+      "id": "53a6c871-c2a4-4c9f-9453-e5b33f5516b0",
+      "name": "Client Strategy Request",
+      "webhookId": "50543b48-83b6-458e-ac33-a67589167938",
+      "credentials": {
+        "typeformApi": {
+          "id": "h6mU2hMc8pUiSOMe",
+          "name": "Typeform account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "70a33fb6-2938-4ac3-8ca1-e433ae5664d5",
+              "leftValue": "={{ $json[\"Business Name\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "3c8f87cf-6558-49c7-b6c4-2e0c1b70eb39",
+              "leftValue": "={{ $json.Email }}",
+              "rightValue": "@",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "009307c0-94ea-4dc1-8d01-3e12a2cd8c4c",
+      "name": "Validate Client Input"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a senior business growth consultant.\n\nUsing the client data provided below, generate a comprehensive Strategic Growth Plan.\n\nCLIENT DATA\n- Client Name: {{ $('Client Strategy Request').item.json['Client Name'] }}\n- Industry: {{ $('Client Strategy Request').item.json.Industry }}\n- Requested Service: {{ $('Client Strategy Request').item.json['Interested service'] }}\n- Primary Goal: {{ $('Client Strategy Request').item.json['What is the specific #1 goal you want to achieve?'] }}\n- Target Audience: {{ $('Client Strategy Request').item.json['Who are your ideal customers?'] }}\n- Budget Level: {{ $('Client Strategy Request').item.json.Budget }}\n- Execution Timeline: {{ $('Client Strategy Request').item.json.Timeline }}\n\nSTRATEGY REQUIREMENTS  \nCreate the strategy using ONLY the following sections and headings:\n\n1. EXECUTIVE SUMMARY  \nProvide a concise, high-level vision of how this strategy will achieve the client’s primary goal within the given timeline and budget.\n\n2. COMPETITIVE ANGLE  \nExplain how {{ $('Client Strategy Request').item.json['Client Name'] }} can clearly differentiate itself in the {{ $('Client Strategy Request').item.json.Industry }} industry for the target audience {{ $('Client Strategy Request').item.json['Who are your ideal customers?'] }}.\n\n3. STRATEGIC PILLARS  \nDefine exactly THREE core strategic pillars that directly support achieving the goal:  \n“{{ $('Client Strategy Request').item.json['What is the specific #1 goal you want to achieve?'] }}”.\n\n4. TACTICAL ROADMAP  \nProvide a step-by-step action plan tailored specifically to a {{ $('Client Strategy Request').item.json.Timeline }} execution period.  \nFocus only on practical, high-impact actions.\n\n5. BUDGET OPTIMIZATION  \nExplain how to allocate and maximize a {{ $('Client Strategy Request').item.json.Budget }} budget specifically for the {{ $('Client Strategy Request').item.json['Interested service'] }} service.\n\n6. KPI & MEASUREMENT  \nDefine exactly THREE measurable KPIs that clearly indicate success of this strategy.\n\nIMPORTANT RULES:\n- Tailor all advice specifically to the {{ $('Client Strategy Request').item.json.Industry }} industry\n- Keep recommendations practical and realistic\n- Do NOT include explanations, disclaimers, or meta commentary\n- Do NOT mention automation tools, AI, or n8n\n- Use clear professional business language\n\nReturn the strategy in clean, structured text using the exact section headings listed above."
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        -80
+      ],
+      "id": "40b17636-2756-4db1-8af6-b0dd8a10b2da",
+      "name": "Generate AI Automation Strategy",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "c8mjM8GqbXgtsZKO",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get the raw text from the AI node as shown in your screenshot\nconst rawAiText = $('Generate AI Automation Strategy').item.json.content.parts[0].text;\n\n// 2. Get the Business Name and Client Name from your form\nconst clientData = $('Client Strategy Request').item.json;\nconst bizName = clientData['Business Name'] || 'Saravana Stores';\nconst clientName = clientData['Client Name'] || 'Aswini';\n\n// 3. CLEANING: Remove the JSON brackets and quotes so it's just plain English\n// This regex removes the keys (like \"EXECUTIVE SUMMARY\":) and the curly braces\nlet readableText = rawAiText\n  .replace(/[\\{\\}]/g, \"\") // Removes { and }\n  .replace(/\"[A-Z\\s&]+\":/g, (match) => `<br><br><strong>${match.replace(/\"|:/g, \"\")}</strong><br>`) // Makes Headers bold\n  .replace(/\"/g, \"\") // Removes all leftover quotation marks\n  .replace(/\\\\n/g, \"<br>\"); // Converts \\n into real line breaks\n\n// 4. Create the final Human-Readable Email Body\nconst htmlBody = `\n<div style=\"font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.8; color: #333; max-width: 700px; margin: auto; padding: 20px; border: 1px solid #eee;\">\n  <h2 style=\"color: #1a73e8; border-bottom: 2px solid #1a73e8; padding-bottom: 10px;\">Service Execution Strategy</h2>\n  <p><strong>To:</strong> Team Chennai</p>\n  <p><strong>Client:</strong> ${clientName} (${bizName})</p>\n  <hr style=\"border: 0; border-top: 1px solid #eee; margin: 20px 0;\">\n  \n  <div style=\"font-size: 16px;\">\n    ${readableText}\n  </div>\n\n  <div style=\"margin-top: 40px; padding: 15px; background-color: #f9f9f9; border-radius: 5px; font-size: 13px; color: #666;\">\n    <em>This strategy was generated based on the \"Digital Jugaad\" request for ${bizName}. Please begin execution immediately.</em>\n  </div>\n</div>\n`;\n\nreturn [{\n  json: {\n    to: clientData['Email'],\n    subject: `Action Plan for ${bizName}`,\n    strategyHtml: htmlBody \n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -80
+      ],
+      "id": "c9be07af-6609-4210-a953-da91d1bd7763",
+      "name": "Format Strategy Response"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Client Strategy Request').item.json.Email }}",
+        "subject": "={{ $json.subject}}",
+        "message": "={{ $json.strategyHtml }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        -80
+      ],
+      "id": "71657916-6ffa-446f-9867-c2d016e2e520",
+      "name": "Send Strategy ",
+      "webhookId": "b785bd76-7a52-4d63-928b-bd2afafa98e1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2eCtNILcCAMEXxFj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Client Strategy Request').item.json.Email }}",
+        "subject": "⚠️ Action Required: Incomplete fields",
+        "message": "<h3>We couldn't process your request.</h3> <p>At Jugaad, we value <strong>research-driven precision</strong>. Your submission was flagged for the following reason:</p> <ul>     <li>Missing Business Name or Service Selection.</li>     <li>@ is missing in mail address </li> </ul> <p>Please resubmit your request with complete details so our <strong>AI/Automation Associates</strong> can craft your strategy.</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        80
+      ],
+      "id": "f92b92b6-9b09-4311-8c2d-650bd367c1e7",
+      "name": "Invalid Input",
+      "webhookId": "a51c6634-8a43-4a82-b225-8cbe4cafa3f1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2eCtNILcCAMEXxFj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "AI Automated Strategy Recommendation System\n\nThis workflow collects client business requirements via Typeform,\nvalidates the input, and uses an AI model (Gemini) to generate a\ncustom automation strategy.\n\nThe generated strategy is formatted and delivered to the team\nvia email. Invalid submissions and runtime errors are handled\nthrough separate notification paths to ensure reliability.",
+        "height": 368
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -128
+      ],
+      "id": "a39200a5-ffea-4684-b3d2-06a4e10f2d17",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Client Strategy Request": {
+      "main": [
+        [
+          {
+            "node": "Validate Client Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Client Input": {
+      "main": [
+        [
+          {
+            "node": "Generate AI Automation Strategy",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invalid Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate AI Automation Strategy": {
+      "main": [
+        [
+          {
+            "node": "Format Strategy Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Strategy Response": {
+      "main": [
+        [
+          {
+            "node": "Send Strategy ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "vFblciOM34GZsEF9"
+  },
+  "versionId": "67aca288-bb39-479f-97a8-62e95b2b56bc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "04e56473066ddf355c8de34b86cb550c53e837e6f20310a60486fd7a6b270cf7"
+  },
+  "id": "91wlTKqCPUwYFpTl",
+  "tags": []
+}
